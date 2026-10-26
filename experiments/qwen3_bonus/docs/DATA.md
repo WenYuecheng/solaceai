@@ -10,12 +10,12 @@ uses `httpx`. It imports no Torch, Transformers, datasets, or model runtime.
 Run from the SolaceAI project root with the existing Python 3.11 environment:
 
 ```sh
-.venv/bin/python -m qwen3_bonus.data --help
-.venv/bin/python -m qwen3_bonus.data fetch --source qwen3_bonus/artifacts/sources
-.venv/bin/python -m qwen3_bonus.data prepare \
+.venv/bin/python -m experiments.qwen3_bonus.data --help
+.venv/bin/python -m experiments.qwen3_bonus.data fetch --source experiments/qwen3_bonus/artifacts/sources
+.venv/bin/python -m experiments.qwen3_bonus.data prepare \
   --project-root . \
-  --source qwen3_bonus/artifacts/sources \
-  --output qwen3_bonus/artifacts/data
+  --source experiments/qwen3_bonus/artifacts/sources \
+  --output experiments/qwen3_bonus/artifacts/data
 .venv/bin/python -m pytest -q qwen3_bonus/tests/test_data.py
 ```
 
@@ -38,7 +38,7 @@ The complete public files were downloaded from the fixed ModelScope API at revis
 | `PsyDTCorpus_test_single_turn_split.json` | 4,311 response prefixes from 240 dialogues | `5b4eeb46721acbf5e9807fcf46902487855cbcd1ed45770b92f27ab1be95207d` |
 | `README.md` | Dataset card | `2882f5a2b2e9bd97a46a0db24e383094ea078068b74df923ad237d2e12bb776e` |
 
-The **dataset's own card**, at the pinned revision, begins with
+The **dataset's own card** , at the pinned revision, begins with
 `license: Apache License 2.0`. This declaration is the dataset-license evidence.
 The saved dataset tree contains no standalone LICENSE file; the manifest records
 that fact. `SoulChat2.0_CODE_LICENSE` is retained separately from code revision
@@ -76,7 +76,7 @@ regression IDs and emotion labels are retained. Their annotation status is
 
 ## Response: 128 training contexts and 40 held-out contexts
 
-PsyDTCorpus is **LLM-synthesized counseling dialogue**, informed by a counselor's
+PsyDTCorpus is **LLM-synthesized counseling dialogue** , informed by a counselor's
 style and seed cases; it is not a collection of 5,000 independent real patient
 consultations. The test file contains expanding prefixes with repeated original
 `id` values. The pipeline first reconstructs the longest coherent prefix per

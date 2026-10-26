@@ -2,28 +2,28 @@
 
 本目录提供独立网关和显式选择的 SolaceAI 入口。原 `app.main:app`、已有 DeepSeek 配置、原 Qwen 情绪分类器和原应用文件均不需要修改。默认不开启新本地调用；仅启动网关也不会自动接管应用。
 
-固定基座为 `Qwen/Qwen3-4B-Instruct-2507`，revision 为 `cdbee75f17c01a7cc42f958dc650907174af0554`。部署使用原基座转换得到的 **MLX 4-bit safetensors**，与两个独立 PEFT LoRA 组合：`solace-emotion` 输出“正常 / 焦虑 / 低落 / 高风险”，`solace-response` 生成短回复。此路径不使用 GGUF，也不通过合并 adapter 生成两个完整基座副本。
+固定基座为 `Qwen/Qwen3-4B-Instruct-2507`，revision 为 `cdbee75f17c01a7cc42f958dc650907174af0554`。部署使用原基座转换得到的 **MLX 4-bit safetensors** ，与两个独立 PEFT LoRA 组合：`solace-emotion` 输出“正常 / 焦虑 / 低落 / 高风险”，`solace-response` 生成短回复。此路径不使用 GGUF，也不通过合并 adapter 生成两个完整基座副本。
 
 ## 准备与检查
 
-先按本目录训练与导出流程生成两个 adapter，在 Apple Silicon 独立环境安装经确认兼容的 vLLM Metal / MLX 运行时，并执行部署转换。示例配置 `qwen3_bonus/configs/serving.example.json` 使用绝对路径；应复制为本目录下的可信本地配置，再改为实际安装和产物路径。配置只由启动操作指定，HTTP 请求不能选择配置、文件路径或第三个模型。
+先按本目录训练与导出流程生成两个 adapter，在 Apple Silicon 独立环境安装经确认兼容的 vLLM Metal / MLX 运行时，并执行部署转换。示例配置 `experiments/qwen3_bonus/configs/serving.example.json` 使用绝对路径；应复制为本目录下的可信本地配置，再改为实际安装和产物路径。配置只由启动操作指定，HTTP 请求不能选择配置、文件路径或第三个模型。
 
 启动前会核对 `config.json`、`bonus_source.json`、各 safetensors 的 SHA-256，以及两个 `bonus_adapter.json` 的基座 revision、任务、rank、alpha、target modules、trained 标志，以及 adapter 配置与权重 SHA-256。基座来源清单必须覆盖配置与全部模型 safetensors，清单路径不能逃出模型目录。`training_result_sha256` 是训练结果来源记录；网关不把该字段视为效果验收证明。
 
 仅检查本地条件，不加载模型：
 
 ```bash
-.venv/bin/python -m qwen3_bonus.probe \
-  --config qwen3_bonus/configs/serving.example.json \
-  --output qwen3_bonus/artifacts/prerequisites.json
+.venv/bin/python -m experiments.qwen3_bonus.probe \
+  --config experiments/qwen3_bonus/configs/serving.example.json \
+  --output experiments/qwen3_bonus/artifacts/prerequisites.json
 ```
 
 需要真实基座、训练产物和 Metal 环境全部就绪后，才能执行真实双 adapter 冒烟：
 
 ```bash
-.venv/bin/python -m qwen3_bonus.probe \
-  --config qwen3_bonus/configs/serving.json \
-  --output qwen3_bonus/artifacts/metal-smoke.json --live
+.venv/bin/python -m experiments.qwen3_bonus.probe \
+  --config experiments/qwen3_bonus/configs/serving.json \
+  --output experiments/qwen3_bonus/artifacts/metal-smoke.json --live
 ```
 
 `--live` 仅访问本机，启动自己拥有的引擎，分别请求两个名称并最终停止引擎。报告会区分 `genuine_inference` 和格式冒烟结果；两个短提示词的冒烟不会令 `release_gate_passed` 成为 true，也不能替代离线评测、质量比较和安全验收。无模型环境下的单测使用合成字节、假 HTTP 传输和轻量子进程，不代表模型已经训练或真实推理已经通过。
@@ -31,8 +31,8 @@
 ## 独立网关
 
 ```bash
-.venv/bin/python -m qwen3_bonus.serving \
-  --config qwen3_bonus/configs/serving.json
+.venv/bin/python -m experiments.qwen3_bonus.serving \
+  --config experiments/qwen3_bonus/configs/serving.json
 ```
 
 网关只绑定 `127.0.0.1:18181`，提供 `GET /health` 与 `POST /v1/chat/completions`。健康端点只返回状态、活动请求数和启动失败次数。`/health` 不会加载模型。聊天请求模型只接受两个固定名称；消息只接受文本的 system/user/assistant 角色，不接受 tools、adapter_path、多媒体或任意扩展参数。请求体上限 64 KiB；输出上限为情绪 16、回复 256 tokens；引擎总上下文固定 2048 tokens，超限由引擎拒绝并向调用方返回 503，应用继续走原来的降级流程。
@@ -67,7 +67,7 @@ vllm serve <MLX基座绝对路径>
 
 ```bash
 BONUS_LOCAL_FALLBACK_ENABLED=true \
-BONUS_RELEASE_REPORT=qwen3_bonus/artifacts/release-report.json \
+BONUS_RELEASE_REPORT=experiments/qwen3_bonus/artifacts/release-report.json \
 .venv/bin/uvicorn qwen3_bonus.asgi:create_app --factory \
   --host 127.0.0.1 --port 8080 --workers 1
 ```
@@ -114,6 +114,6 @@ DeepSeek 正常时不会新增本地兜底调用；原 Qwen 分类观测的既�
 
 ## 2026-10-25 当前回答降级选择
 
-本机`serving.local.json`的`response_adapter`现指向`artifacts/adapters/solace-response-perm-grpo64/`，别名仍为`solace-response`。这是同一次训练的最终第64步终态快照，80题统一评测中四维质量均分达到3.253，对基座偏好胜率达56.25%，在核心倾听陪伴场景中表现优异。分类适配器保持`solace-emotion`，云端主调用和原业务API形态保持原设计。原GRPO32＋SFT留在`artifacts/adapters/solace-response/`供对照或回滚。
+本机`serving.local.json`的`response_adapter`现指向`artifacts/adapters/solace-response-perm-grpo64/`，别名仍为`solace-response`。这是同一次训练的最终第64步终态快照，80题统一评测中四维质量均分达到3.253，对基座偏好得分率达56.25%，在核心倾听陪伴场景中表现优异。分类适配器保持`solace-emotion`，云端主调用和原业务API形态保持原设计。原GRPO32＋SFT留在`artifacts/adapters/solace-response/`供对照或回滚。
 
 部署选择依据、权重指纹与测试用途见[完整评测](PERM_EVALUATION.md)和`artifacts/perm-grpo-20261024/evaluation-final/deployment-choice.json`；当前运行绑定见`artifacts/local-deployment/selected-model.json`。实际双模型交替、四类分类、模拟云端故障降级、SSE、闲置卸载与重载均重新验收。启动与停止仍使用`python -m experiments.qwen3_bonus.local_stack start|stop`，本机入口为 http://127.0.0.1:8082 。
