@@ -1,0 +1,75 @@
+.admin-page .el-input__wrapper,
+.admin-page .el-select__wrapper {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  box-shadow: none;
+}
+
+.admin-page .el-input__wrapper.is-focus,
+.admin-page .el-select__wrapper.is-focused {
+  border-color: var(--aqua);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--aqua) 12%, transparent) !important;
+}
+
+.admin-page .el-table {
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: var(--surface-soft);
+  --el-table-row-hover-bg-color: var(--surface-soft);
+  --el-table-border-color: var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.admin-page .el-table__row { cursor: pointer; }
+.admin-page .el-drawer { color: var(--text); background: var(--surface-solid); }
+.admin-page .el-drawer__header { margin-bottom: 0; padding-bottom: 18px; border-bottom: 1px solid var(--line); color: var(--text); font-family: var(--font-display); }
+.admin-page .el-overlay { backdrop-filter: blur(5px); }
+.admin-page .el-upload-dragger { border-color: var(--line); border-radius: var(--radius-md); background: var(--surface-soft); }
+.admin-page .el-upload-dragger:hover { border-color: var(--aqua); }
+.admin-page .el-segmented { --el-segmented-bg-color: var(--surface-soft); --el-segmented-item-selected-bg-color: var(--surface-raised); --el-segmented-item-selected-color: var(--text); }
+
+/* 采用柔和纸质质感表面与自然点缀色，保持教师工作台视觉沉静雅致 */
+.admin-page .glass { background: var(--surface); border: 1px solid var(--line); box-shadow: none; backdrop-filter: none; }
+.admin-page .metric-card.glass { border: 0; border-right: 1px solid var(--line); }
+.admin-page .metric-card.glass:last-child { border-right: 0; }
+.admin-page .data-view, .admin-page .chart-card, .admin-page .summary-panel, .admin-page .upload-panel, .admin-page .maintenance-panel, .admin-page .knowledge-hero { border-radius: 20px; }
+.admin-page .data-view h2 { font-size: 24px; letter-spacing: -.02em; }
+.admin-page .data-view > header { padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.admin-page .data-view .filters { margin: 20px 0; padding: 14px; background: var(--surface-soft); border-radius: 12px; }
+.admin-page .el-table { --el-table-header-text-color: var(--text-soft); --el-table-text-color: var(--text); font-size: 13px; }
+.admin-page .el-table th.el-table__cell { height: 44px; font-weight: 500; }
+.admin-page .el-table td.el-table__cell { height: 58px; }
+.admin-page .el-tag { border-radius: 7px; font-size: 11px; }
+.admin-page .count-chip { background: var(--surface-soft); border: 0; }
+.admin-page .knowledge-stats > span { min-width: 105px; padding: 8px 18px 8px 0; border: 0; border-right: 1px solid var(--line); border-radius: 0; background: transparent; }
+.admin-page .knowledge-stats > span:last-child { border-right: 0; }
+.admin-page .knowledge-stats { gap: 20px; }
+.admin-page .el-upload-dragger { border-style: dashed; border-radius: 12px; }
+.admin-page .el-input__wrapper.is-focus, .admin-page .el-select__wrapper.is-focused { border-color: var(--lagoon); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lagoon) 12%, transparent) !important; }
+.admin-page .el-overlay { backdrop-filter: none; }
+.admin-page button:focus-visible, .admin-page a:focus-visible { outline: 2px solid var(--lagoon); outline-offset: 3px; }
+@media (max-width: 650px) { .admin-page .knowledge-stats { gap: 12px; }.admin-page .metric-card.glass { border-bottom: 1px solid var(--line); } }
+
+.admin-page .data-view { min-width: 0; }
+.admin-page .data-view > header { flex-wrap: wrap; }
+.admin-page .data-view h2 { font-weight: 600; }
+.admin-page .summary-panel, .admin-page .chart-card { border-color: color-mix(in srgb, var(--line) 72%, transparent); }
+@media (max-width: 650px) {
+  .admin-page .data-view { padding: 18px 14px; }
+  .admin-page .data-view .filters { flex-wrap: wrap; min-width: 0; }
+  .admin-page .maintenance-action { align-items: flex-start; flex-wrap: wrap; }
+  .admin-page .knowledge-stats > span { min-width: 80px; padding-right: 10px; }
+}
+
+.admin-page .upload-panel > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.admin-page .upload-panel > header h3 { margin: 0; font-size: 20px; }
+
+/* 在保证工作台面板高可读性的同时，保持背景通透开阔 */
+.admin-page .glass { background: #fffef9e6; }
+.admin-page .workspace-header { background: #fffef9d6; padding: 18px 22px; border-radius: 22px; border-bottom: 0; }
+.admin-page .data-view { background: #fffef9eb; }
+.admin-page .metric-grid { background: #fffef9e0; }
+@media (max-width: 650px) { .admin-page .workspace-header { padding: 16px; } }

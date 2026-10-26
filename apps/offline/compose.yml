@@ -1,0 +1,46 @@
+name: solaceai-offline
+# Linux host networking preserves the loopback-only model-client security boundary.
+# Start Milvus with: docker compose -f deploy/compose/docker-compose.rag.yml up -d
+# Ollama must listen on host loopback port 11434.
+services:
+  app:
+    image: solaceai-offline:local
+    build:
+      context: ../..
+      dockerfile: apps/offline/Dockerfile
+    network_mode: host
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: ${OFFLINE_DATABASE_URL:-${DATABASE_URL:?Configure the offline MySQL DATABASE_URL}}
+      REDIS_URL: redis://127.0.0.1:6380/1
+      LOCAL_RAG_AUTOSTART: "false"
+      LOCAL_RAG_URL: http://127.0.0.1:8091
+    volumes: ["offline-data:/app/data/offline"]
+    depends_on:
+      redis: {condition: service_healthy}
+      worker: {condition: service_healthy}
+    restart: unless-stopped
+  redis:
+    image: redis:7.2-alpine
+    ports: ["127.0.0.1:6380:6379"]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+  worker:
+    build:
+      context: ../..
+      dockerfile: apps/rag_worker/Dockerfile
+    network_mode: host
+    volumes: ["../../models:/models:ro"]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8091/health', timeout=3)"]
+      interval: 15s
+      start_period: 120s
+      timeout: 5s
+      retries: 20
+volumes:
+  offline-data:

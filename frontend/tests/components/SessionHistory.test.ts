@@ -1,0 +1,56 @@
+import { mount, flushPromises } from '@vue/test-utils'
+import { beforeEach, expect, it, vi } from 'vitest'
+import SessionHistory from '@/components/student/SessionHistory.vue'
+const summary = { sessionId: 'one', title: '<script>unsafe</script>', updatedAt: '2026-01-01' }
+beforeEach(() => { vi.restoreAllMocks() })
+it('renders escaped titles and selects the public session', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [summary], total: 1 }))))
+  const wrapper = mount(SessionHistory, { props: { activeSession: 'one' } })
+  await flushPromises()
+  expect(wrapper.find('script').exists()).toBe(false)
+  await wrapper.get('.session-select').trigger('click')
+  expect(wrapper.emitted('select')).toEqual([['one']])
+})
+it('requires confirmation and stops the selected request before removal', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ items: [summary], total: 1 })))
+    .mockResolvedValueOnce(new Response('{"deleted":true}'))
+    .mockResolvedValueOnce(new Response('{"items":[],"total":0}'))
+  vi.stubGlobal('fetch', fetch)
+  const wrapper = mount(SessionHistory, { props: { activeSession: 'one' } })
+  await flushPromises()
+  await wrapper.get('.remove').trigger('click')
+  expect(fetch).toHaveBeenCalledTimes(1)
+  await wrapper.get('.confirm-dialog .secondary-button').trigger('click')
+  await wrapper.get('.remove').trigger('click')
+  await wrapper.get('[data-confirm]').trigger('click')
+  expect(wrapper.emitted('removing')).toEqual([['one']])
+  await flushPromises()
+  expect(fetch.mock.calls[1][1].method).toBe('DELETE')
+  expect(wrapper.emitted('removed')).toEqual([['one']])
+})
+
+it('cannot restore a session removed while its history request is pending', async () => {
+  const { createPinia, setActivePinia } = await import('pinia')
+  const { useChatStore } = await import('@/stores/chat')
+  setActivePinia(createPinia())
+  const chat = useChatStore()
+  let settleDetail!: (response: Response) => void
+  const fetch = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ items: [summary], total: 1 })))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { settleDetail = resolve }))
+    .mockResolvedValueOnce(new Response('{"deleted":true}'))
+    .mockResolvedValueOnce(new Response('{"items":[],"total":0}'))
+  vi.stubGlobal('fetch', fetch)
+  const invalidate = (id: string) => chat.invalidateSession(id)
+  const wrapper = mount(SessionHistory, { props: { activeSession: null, onRemoving: invalidate, onRemoved: invalidate } })
+  await flushPromises()
+  const pending = chat.loadSession('one')
+  expect(chat.pendingSessionId).toBe('one')
+  await wrapper.get('.remove').trigger('click')
+  await wrapper.get('[data-confirm]').trigger('click')
+  await flushPromises()
+  settleDetail(new Response(JSON.stringify({ sessionId: 'one', messages: [{ id: 'old', role: 'user', content: 'hidden' }] })))
+  await pending
+  expect(chat.pendingSessionId).toBeNull()
+  expect(chat.sessionId).toBeNull()
+  expect(chat.messages).toEqual([])
+})

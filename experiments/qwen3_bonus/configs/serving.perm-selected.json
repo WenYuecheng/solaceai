@@ -1,0 +1,18 @@
+{
+  "model_path": "/Users/wenyuecheng/code/python/solaceai/experiments/qwen3_bonus/artifacts/models/base-mlx4",
+  "emotion_adapter": "/Users/wenyuecheng/code/python/solaceai/experiments/qwen3_bonus/artifacts/adapters/solace-emotion",
+  "response_adapter": "/Users/wenyuecheng/code/python/solaceai/experiments/qwen3_bonus/artifacts/adapters/solace-response-perm-grpo2",
+  "engine_executable": "/Users/wenyuecheng/code/python/solaceai/experiments/qwen3_bonus/.venv-metal/bin/vllm",
+  "gateway_port": 18181,
+  "engine_port": 18182,
+  "base_model": "Qwen/Qwen3-4B-Instruct-2507",
+  "base_revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "cold_wait_seconds": 10,
+  "startup_timeout_seconds": 180,
+  "request_timeout_seconds": 90,
+  "idle_seconds": 300,
+  "poll_seconds": 0.25,
+  "failure_cooldown_seconds": 30,
+  "max_start_failures": 3,
+  "local_token": null
+}

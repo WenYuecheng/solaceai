@@ -1,0 +1,5 @@
+# 独立环境：不装入正常应用环境。
+ragas==0.3.9
+langchain-core==0.3.86
+httpx==0.28.1
+pydantic-settings==2.15.0

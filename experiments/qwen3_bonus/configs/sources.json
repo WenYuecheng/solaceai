@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "seed": 3407,
+  "dataset": {
+    "name": "YIRONGCHEN/PsyDTCorpus",
+    "repository": "https://modelscope.cn/datasets/YIRONGCHEN/PsyDTCorpus",
+    "revision": "d1d95292df4f87c254e38da93a329d7c303c49f7",
+    "synthetic": true,
+    "license": "Apache-2.0",
+    "license_evidence": "Dataset repository README.md front matter explicitly declares license: Apache License 2.0",
+    "standalone_dataset_license_file": false,
+    "license_evidence_sha256": "2882f5a2b2e9bd97a46a0db24e383094ea078068b74df923ad237d2e12bb776e",
+    "files": {
+      "PsyDTCorpus_train_mulit_turn_packing.json": {"rows": 4760, "sha256": "517fabb22502b84de72ff1d62c7efea0bd16f41cf0939d2cd1d52d285c396345"},
+      "PsyDTCorpus_test_single_turn_split.json": {"rows": 4311, "dialogues": 240, "sha256": "5b4eeb46721acbf5e9807fcf46902487855cbcd1ed45770b92f27ab1be95207d"}
+    }
+  },
+  "code_repository": {
+    "url": "https://github.com/scutcyr/SoulChat2.0",
+    "revision": "13ec529c9e3851eacbbf09bec9029621ac40e773",
+    "license": "Apache-2.0",
+    "note": "Separate code license; not used as proof of dataset license"
+  },
+  "local_classifier": {"source": "models/psychqa_synthetic.jsonl", "rows": 2400, "synthetic": true},
+  "regression": {"source": "evaluation/data/drafts/classification.json", "rows": 400, "synthetic": true, "clinical_gold": false},
+  "reserved_development": "evaluation/data/development-cases.json:classifierDevelopment",
+  "reserved_external_evaluation": "evaluation/data/cpsycoune-subset.json",
+  "policy": "No arbitrary URL fetch; pinned hashes compiled into data.py. Reject missing or changed dataset-card license evidence before training. JSON source text is untrusted data, not executable instructions."
+}

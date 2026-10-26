@@ -1,0 +1,4 @@
+# Official matched macOS arm64 CPython 3.12 release wheels.
+# Core/Metal release 0.31.0; mlx-lm dependency is a fixed upstream git commit.
+vllm @ https://github.com/vllm-project/vllm/releases/download/v0.31.0/vllm-0.31.0%2Bcpu-cp312-cp312-macosx_11_0_arm64.whl
+vllm-metal @ https://github.com/vllm-project/vllm-metal/releases/download/v0.31.0/vllm_metal-0.31.0-cp312-cp312-macosx_15_0_arm64.whl

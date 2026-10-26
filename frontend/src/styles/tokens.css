@@ -1,0 +1,81 @@
+@font-face {
+  font-family: "ZCOOL KuaiLe";
+  src: url("/fonts/zcool-kuaile.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "SolaceAI Display";
+  src: url("/fonts/space-grotesk.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 500 700;
+}
+
+@font-face {
+  font-family: "SolaceAI Sans";
+  src: url("/fonts/source-sans.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400 700;
+}
+
+@font-face {
+  font-family: "SolaceAI Mono";
+  src: url("/fonts/ibm-plex-mono.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+}
+
+:root {
+  color-scheme: light;
+  --font-display: "PingFang SC", "Microsoft YaHei", "SolaceAI Sans", sans-serif;
+  --font-body: "PingFang SC", "Microsoft YaHei", "SolaceAI Sans", sans-serif;
+  --font-playful: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  --font-mono: "SolaceAI Mono", ui-monospace, monospace;
+  --bg: #f6f5ee;
+  --bg-deep: #e7ebdc;
+  --surface: #fffef9;
+  --surface-solid: #fffef9;
+  --surface-raised: #fffef9;
+  --surface-soft: #edf0e4;
+  --text: #344137;
+  --text-soft: #59665b;
+  --text-faint: #647164;
+  --line: #dce2d3;
+  --line-strong: #a9b8a0;
+  --lagoon: #4e6750;
+  --lagoon-deep: #3b533e;
+  --aqua: #688167;
+  --violet: #7c8ba0;
+  --coral: #ad715c;
+  --amber: #95651d;
+  --success: #427358;
+  --danger: #b13f38;
+  --shadow-sm: 0 2px 8px rgba(48, 37, 31, .035);
+  --shadow-lg: 0 12px 32px rgba(48, 37, 31, .07);
+  --glass-blur: 0px;
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --duration-fast: 160ms;
+  --duration-base: 280ms;
+  --duration-slow: 700ms;
+
+  --el-color-primary: var(--lagoon);
+  --el-color-success: var(--success);
+  --el-color-warning: var(--amber);
+  --el-color-danger: var(--danger);
+  --el-bg-color: var(--surface-solid);
+  --el-bg-color-overlay: var(--surface-solid);
+  --el-fill-color-blank: transparent;
+  --el-fill-color-light: var(--surface-soft);
+  --el-text-color-primary: var(--text);
+  --el-text-color-regular: var(--text-soft);
+  --el-border-color: var(--line);
+  --el-border-color-light: var(--line);
+  --el-border-radius-base: var(--radius-sm);
+  --el-box-shadow-light: var(--shadow-sm);
+}
+

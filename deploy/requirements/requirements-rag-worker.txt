@@ -1,0 +1,2 @@
+# Canonical isolated worker dependencies
+-r ../../apps/rag_worker/requirements.lock
