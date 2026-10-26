@@ -192,7 +192,7 @@ flowchart TD
         Gen1 & Gen2 --> CodeCheck[确定性程序规则约束检验]
         CodeCheck --> ReqRatio[可验证要求达成率 P_req]
         
-        NormPref & ReqRatio --> Harmonic[PERM 调和平均融合: H(R_pref, P_req)]
+        NormPref & ReqRatio --> Harmonic["PERM 调和平均融合: H(R_pref, P_req)"]
         
         Gen1 & Gen2 --> RepCheck[4-gram 重复率平滑惩罚]
         Gen1 & Gen2 --> SafetyViol[医疗处方与确定性诊断严重违规拦截]
@@ -200,8 +200,8 @@ flowchart TD
         Harmonic & RepCheck & SafetyViol --> FinalR[综合奖励标量 R]
     end
     
-    FinalR --> Advantage[组内无 Critic 优势估计: A_i = (R_i - mean) / (std + eps)]
-    Advantage --> Update[PPO-Clipped 策略梯度更新 + KL 散度约束 (β=0.02)]
+    FinalR --> Advantage["组内无 Critic 优势估计: A_i = (R_i - mean) / (std + eps)"]
+    Advantage --> Update["PPO-Clipped 策略梯度更新 + KL 散度约束 (β=0.02)"]
     Update --> Checkpoint[AtomicCheckpointStore 原子状态机与防 OOM 看门狗守护]
 ```
 
@@ -275,7 +275,7 @@ flowchart LR
     PreProcess --> Sparse[BGE-M3 / BM25 稀疏词法召回<br/>关键词与专业术语匹配]
     
     Dense & Sparse --> Candidates[Top-20 候选文档池]
-    Candidates --> RRF[Reciprocal Rank Fusion (RRF)<br/>互惠名次无量纲融合]
+    Candidates --> RRF["Reciprocal Rank Fusion (RRF)<br/>互惠名次无量纲融合"]
     RRF --> Top30[Top-30 融合精选集]
     Top30 --> CrossEncoder[Cross-Encoder 交叉编码器重排<br/>bge-reranker-large 深度全注意力评分]
     CrossEncoder --> Top4[最终 Top-4 黄金证据切块]

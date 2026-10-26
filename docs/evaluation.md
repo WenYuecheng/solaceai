@@ -38,8 +38,8 @@ flowchart TD
     DispatchLuna --> LunaJudge[独立第三方裁判模型: GPT-5.6-Luna<br/>执行临床 3 级相关性打分 0/1/2]
     LunaJudge --> MergeQrels[增补判定回填持久化并合并入已知 Qrels]
     
-    MergeQrels --> ReEval[候选池覆盖率达成 100%<br/>GateCheck 判定通过]
-    GateCheck -->|全切片判定完备| ComputeFinal[计算最终无偏的精确学术指标<br/>Hit@4 100% / MRR 0.9959 / nDCG 0.7760]
+    MergeQrels --> ReEval["候选池覆盖率达成 100%<br/>GateCheck 判定通过"]
+    GateCheck -->|全切片判定完备| ComputeFinal["计算最终无偏的精确学术指标<br/>Hit@4 100% / MRR 0.9959 / nDCG 0.7760"]
 ```
 
 1. **第一阶段：`metrics.py` 的严格无偏门禁阻断 (Invariant Safety Gate)**：

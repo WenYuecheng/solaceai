@@ -54,7 +54,7 @@ graph TD
         DSH --> EdgeClass[端侧 Qwen3-4B 双 LoRA 引擎<br/>毫秒级私密情感分类 & 危机拦截]
         EdgeClass --> Router{意图分流与状态机驱动}
         
-        Router -->|CHAT / 闲聊安抚| CloudLLM[云端深度认知大模型: DeepSeek<br/>(云端异常时自动降级至端侧 Qwen3 回答 LoRA)]
+        Router -->|CHAT / 闲聊安抚| CloudLLM["云端深度认知大模型: DeepSeek<br/>(云端异常时自动降级至端侧 Qwen3 回答 LoRA)"]
         Router -->|CONSULT / 循证咨询| RAGEngine[多阶段高精度混合检索 RAG]
         Router -->|RISK / 明确高危| SafetyGate[确定性危机干预 & 安全模板熔断]
         
