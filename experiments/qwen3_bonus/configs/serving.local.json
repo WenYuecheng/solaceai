@@ -2,7 +2,7 @@
   "model_path": "/Users/wenyuecheng/code/python/solaceai/experiments/qwen3_bonus/artifacts/models/base-mlx4",
   "emotion_adapter": "/Users/wenyuecheng/code/python/solaceai/experiments/qwen3_bonus/artifacts/adapters/solace-emotion",
   "response_adapter": "/Users/wenyuecheng/code/python/solaceai/experiments/qwen3_bonus/artifacts/adapters/solace-response-perm-grpo64",
-  "engine_executable": "/Users/wenyuecheng/code/python/solaceai/experiments/qwen3_bonus/.venv-metal/bin/vllm",
+  "engine_executable": "/Users/wenyuecheng/code/python/solaceai/experiments/qwen3_bonus/.venv-metal-032/bin/vllm",
   "gateway_port": 18181,
   "engine_port": 18182,
   "base_model": "Qwen/Qwen3-4B-Instruct-2507",

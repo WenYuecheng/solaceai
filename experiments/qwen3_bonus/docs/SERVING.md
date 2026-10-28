@@ -117,3 +117,10 @@ DeepSeek 正常时不会新增本地兜底调用；原 Qwen 分类观测的既�
 本机`serving.local.json`的`response_adapter`现指向`artifacts/adapters/solace-response-perm-grpo64/`，别名仍为`solace-response`。这是同一次训练的最终第64步终态快照，80题统一评测中四维质量均分达到3.253，对基座偏好得分率达56.25%，在核心倾听陪伴场景中表现优异。分类适配器保持`solace-emotion`，云端主调用和原业务API形态保持原设计。原GRPO32＋SFT留在`artifacts/adapters/solace-response/`供对照或回滚。
 
 部署选择依据、权重指纹与测试用途见[完整评测](PERM_EVALUATION.md)和`artifacts/perm-grpo-20261024/evaluation-final/deployment-choice.json`；当前运行绑定见`artifacts/local-deployment/selected-model.json`。实际双模型交替、四类分类、模拟云端故障降级、SSE、闲置卸载与重载均重新验收。启动与停止仍使用`python -m experiments.qwen3_bonus.local_stack start|stop`，本机入口为 http://127.0.0.1:8082 。
+
+
+### 2026-10-28 线下运行时升级
+
+本机 `serving.local.json` 已切换至独立 `.venv-metal-032` 环境（vLLM / vLLM Metal 0.32.0，MLX 0.32.2），继续使用原 MLX 4-bit 基座及两个 LoRA。旧 `.venv-metal` 0.31.0 环境保留。实测证据在 `artifacts/upgrade-metal032/`：四类分类、12 次交替调用、双模型 SSE、空闲卸载与重载通过；12 次确定性输出与旧版完全一致。首次启动 91.403 秒（含首次导入），重载 15.868 秒；无性能提升结论。回退时恢复本机 `artifacts/upgrade-metal032/serving.local.before.json` 到 `configs/serving.local.json` 并重启本机栈。未启用实验性 MPS 或睡眠模式。
+
+升级后通过线下实际服务端口复查分类及回答，应用健康检查为 `UP`；相关回归测试 51 项通过。验收脚本和原始输出是本机产物，不随源码发布。依赖锁定文件记录实际验收环境的精确版本、官方 wheel 地址及固定 git revision，本次采用无逐包哈希的快照格式。
