@@ -1,0 +1,28 @@
+name: solaceai-online
+services:
+  app:
+    image: solaceai-online:local
+    build:
+      context: ../..
+      dockerfile: apps/online/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: sqlite:////app/data/online/solaceai.sqlite
+      REDIS_URL: redis://redis:6379/0
+      API_DAILY_BUDGET_CNY: '1'
+    ports: ["127.0.0.1:8081:8080"]
+    volumes: ["online-data:/app/data/online"]
+    depends_on:
+      redis: {condition: service_healthy}
+    restart: unless-stopped
+  redis:
+    image: redis:7.2-alpine
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+volumes:
+  online-data:

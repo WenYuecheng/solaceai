@@ -21,6 +21,45 @@
 
 ---
 
+## 📸 实际运行截图
+
+以下截图于 **2026-11-16** 启动本地 Vue 前端与 FastAPI 后端后，通过浏览器实际操作拍摄。使用独立演示账号、全新 SQLite 演示库和示例提问，管理端报告由本次对话自动生成；截图不包含真实用户资料。
+
+### 登录与学生工作台
+
+邮箱与密码登录入口，以及包含历史会话、情绪快捷入口和个人记忆管理的学生首页。
+
+![SolaceAI 登录页：邮箱验证码与密码登录入口](docs/images/runtime/01-login.png)
+
+![SolaceAI 学生首页：心情手账、对话区与小憩角落](docs/images/runtime/02-student-home.png)
+
+### 真实对话与执行过程
+
+向系统提交毕业设计与面试压力的示例问题，展示 DeepSeek Flash 实际生成的回复，以及可展开的 Agent 决策、工具调用和结果记录。
+
+![SolaceAI 实际对话：示例提问与模型回复](docs/images/runtime/03-student-chat.png)
+
+![SolaceAI 回答执行过程：实际步骤、状态与耗时](docs/images/runtime/04-execution-trace.png)
+
+本次演示使用本地 Ollama 分类与 DeepSeek Flash 回答，检索使用 BM25 和词法重排；未启动 Milvus/BGE 向量服务，界面如实显示检索降级状态。完整混合检索的配置与历史评测见[系统架构指南](docs/guide.md)和[评测说明](docs/evaluation.md)。
+
+### 管理工作台与知识库
+
+管理端读取本次演示产生的咨询报告，展示报告数量、风险分布、工具执行统计和知识库维护入口。
+
+![SolaceAI 管理工作台：本次演示报告与统计图表](docs/images/runtime/05-admin-overview.png)
+
+![SolaceAI 知识库维护：片段统计、文件上传与索引维护](docs/images/runtime/06-admin-knowledge.png)
+
+<details>
+<summary>查看移动端登录效果</summary>
+
+<img src="docs/images/runtime/07-mobile-login.png" alt="SolaceAI 移动端登录页实拍" width="390" />
+
+</details>
+
+---
+
 ## 🌟 旗舰级量化性能看板 (Flagship Performance Metrics)
 
 下表汇总既有实验记录：123 题检索/生成评测、400 条合成分类回归及 80 题四模型回答评测。不同实验的样本、配置和指标范围分别见评测文档。
@@ -151,7 +190,7 @@ flowchart TD
 
 ## ⚡ 极速上手与部署 (Quick Start)
 
-当前仓库仅收录线下版本源码和说明文档；技能、知识库、分词器数据、图片字体、模型权重及运行环境文件按上传范围省略，完整运行前需在部署环境补齐。
+本次同步包含 Vue 前端、FastAPI 共享核心、在线/线下后端与 RAG Worker 源码，以及前端图片字体、技能提示词、分词器等必要运行资源。配置示例见 `.env.example`。实际 `.env`、数据库、会话记录、知识库原文与索引、模型权重、训练产物、日志及本地中间数据不随本次同步上传，需在部署环境自行配置。
 
 ### 本地源码安装
 
@@ -168,7 +207,7 @@ pnpm build
 cd ..
 ```
 
-配置 MySQL、Redis、Milvus、本地模型服务及共享环境参数后，使用 `python -m apps.offline.main` 启动；默认监听 `127.0.0.1:8082`，接口文档为 `/docs`。前端图片等资源未补齐时，原有构建可能因资源缺失报错，需要部署者先恢复这些资源。
+配置 MySQL、Redis、Milvus、本地模型服务及共享环境参数后，使用 `python -m apps.offline.main` 启动；默认监听 `127.0.0.1:8082`，接口文档为 `/docs`。前端构建结果由后端直接托管；知识库由管理员在部署后导入。在线轻量后端另见 `apps/online`，其依赖与配置独立。
 
 ### 容器编排
 
@@ -191,20 +230,20 @@ solaceai/
 │   ├── agents/                       # LangGraph 状态机、GraphRuntime 与 Harness 编排
 │   ├── services/                     # 核心服务: 混合检索、上下文压缩(DSH)、文档治理、危机评估
 │   ├── api/                          # FastAPI 路由、SSE 流式端点与管理员管控接口
-│   ├── knowledge/                    # 知识库 39 篇权威主题文献与来源清单
+│   ├── assets/                       # 分词器与城市目录等运行资源
+│   ├── skills/                       # 心理支持技能提示词（不含用户数据）
 │   └── models/                       # 数据库 ORM 实体与 Pydantic 校验模型
 ├── apps/                             # 独立应用适配器与独立 Worker
+│   ├── online/                       # 在线轻量适配器 (SQLite + Chroma)
 │   ├── offline/                      # 线下生产适配器 (MySQL + Milvus + Redis)
 │   └── rag_worker/                   # 独立 BGE-M3 / Cross-Encoder 模型计算服务
-├── experiments/qwen3_bonus/           # Qwen3-4B 双 LoRA 训练代码与实验产物
+├── experiments/qwen3_bonus/           # 历史已发布的训练源码，本次不同步本地实验产物
 ├── docs/                             # 系统权威技术文档矩阵
 │   ├── README.md                     # 文档中心全局导航
 │   ├── guide.md                      # 🔥 核心白皮书: 系统架构、微内核设计与全栈工程落地权威指南
 │   └── evaluation.md                 # 权威性能基准评测报告 (100% Hit@4, RAGAS 深度分析)
-├── evaluation/                       # 离线自动化评测套件与标注真值数据集
-│   ├── suites/                       # 自动化 Benchmark 执行套件与双裁判交叉评分
-│   └── data/                         # 123 题核心基准用例与权威评测样本
-├── frontend/                         # 现代化 Vue 3 + TailwindCSS 前端交互界面
+├── evaluation/                       # 历史评测说明，本次不同步本地评测数据
+├── frontend/                         # Vue 3 + TypeScript + Pinia / Element Plus 前端
 ├── deploy/                           # Docker Compose 编排、环境预设与模块化依赖
 └── tests/                            # 完整项目测试目录，本次精简上传未包含
 ```

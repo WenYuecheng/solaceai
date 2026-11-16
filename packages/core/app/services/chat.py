@@ -74,12 +74,16 @@ class ChatService:
         if busy:
             yield sse('error', {'type': 'error', 'code': 'SESSION_BUSY', 'message': '本次对话正在回复，请等待完成。'})
             return
+        stream = self._stream_chat(user, request)
         try:
-            async for event in self._stream_chat(user, request):
+            async for event in stream:
                 yield event
         finally:
-            with _ACTIVE_LOCK:
-                _ACTIVE_TURNS.discard(key)
+            try:
+                await stream.aclose()
+            finally:
+                with _ACTIVE_LOCK:
+                    _ACTIVE_TURNS.discard(key)
 
     async def _stream_chat(self, user: UserAccount, request: ChatRequest):
         """端到端流式对话内部生成器 (Async Streaming Generator Implementation)
@@ -115,14 +119,26 @@ class ChatService:
                 except RuntimeError:
                     cancel_event.set()
 
+        self._worker_finished = threading.Event()
+
+        def run_worker():
+            try:
+                return self._run_in_worker(user, request, cancel_event, emit)
+            finally:
+                self._worker_finished.set()
+                lease = getattr(self, '_turn_lease', None)
+                if lease is not None and lease.cancelled.is_set():
+                    lease.release()
+
         async def execute():
             """在工作线程池中异步调度 Agent 完整生命周期执行，并在结束时写入哨兵标记 None。"""
             try:
-                return await asyncio.to_thread(self._run_in_worker, user, request, cancel_event, emit)
+                return await asyncio.to_thread(run_worker)
             finally:
                 await events.put(None)
 
         task = asyncio.create_task(execute())
+        self._worker_task = task
         try:
             while True:
                 event = await events.get()
@@ -137,7 +153,7 @@ class ChatService:
             outcome = await task
         except (asyncio.CancelledError, GeneratorExit):
             cancel_event.set()
-            task.cancel()
+            # Keep the real thread future alive so lease release follows completion.
             raise
         except Exception:
             logger.error('Agent run failed', exc_info=True)

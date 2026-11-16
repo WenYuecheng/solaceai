@@ -304,6 +304,9 @@ class Settings(BaseSettings):
     database_url: str = "mysql+pymysql://solaceai:solaceai@127.0.0.1:3306/solaceai?charset=utf8mb4"
     """业务关系型数据库连接 URL (默认 MySQL 8.0，亦支持 SQLite)"""
 
+    conversation_timeout_seconds: float = Field(default=180, ge=1, le=300, allow_inf_nan=False)
+    """Absolute admitted conversation deadline, including every paid upstream call."""
+
     chat_history_limit: int = 10
     """单轮对话默认加载的最近历史交互消息条数"""
 

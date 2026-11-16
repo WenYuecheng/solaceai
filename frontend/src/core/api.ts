@@ -62,6 +62,7 @@ export async function request(path: string, options: RequestInit = {}): Promise<
           '请检查输入信息及密码确认',
           '用户名或密码错误',
           '验证码无效或已过期',
+          '根据有关要求暂不开放注册，实际账号体验请联系管理员。',
           '登录已过期，请重新登录',
           '用户名或邮箱已被使用',
           '请求过于频繁，请稍后再试',

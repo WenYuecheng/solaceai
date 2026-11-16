@@ -11,7 +11,7 @@ const mode = shallowRef<'password' | 'email'>('email')
 const fields = reactive({ username: '', email: '', password: '', code: '' })
 const formError = shallowRef(''), notice = shallowRef(''), sending = shallowRef(false), remaining = shallowRef(0)
 const busy = computed(() => auth.loading || sending.value)
-const title = computed(() => mode.value === 'email' ? '邮箱登录 / 注册' : '欢迎回到 SolaceAI')
+const title = computed(() => mode.value === 'email' ? '邮箱登录' : '欢迎回到 SolaceAI')
 let timer: ReturnType<typeof setInterval> | undefined
 onUnmounted(() => clearInterval(timer))
 function switchMode(next: typeof mode.value) {
@@ -26,7 +26,7 @@ async function sendCode() {
   sending.value = true
   try {
     await requestJson('/api/auth/code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: fields.email.trim(), purpose: 'login' }) })
-    notice.value = '验证码请求已提交，5 分钟内有效。新邮箱验证成功后需设置用户名和密码。'
+    notice.value = '如邮箱可用于学生登录，验证码将发送至该邮箱，5 分钟内有效。'
     remaining.value = 60
     clearInterval(timer)
     timer = setInterval(() => { remaining.value--; if (remaining.value <= 0) clearInterval(timer) }, 1000)
@@ -50,9 +50,10 @@ async function submit() {
   <CredentialSetup v-if="auth.profile?.requiresSetup" @authenticated="emit('authenticated', $event)" />
   <div v-else class="access-form">
     <h2 id="login-title">{{ title }}</h2>
-    <p class="intro">{{ mode === 'email' ? '未注册邮箱验证成功后将自动创建学生账号，再设置用户名和密码。心理教师请使用密码登录。' : '使用用户名或已绑定邮箱和密码登录。' }}</p>
+    <p class="intro">{{ mode === 'email' ? '使用已绑定的学生邮箱登录。心理教师请使用密码登录。' : '使用用户名或已绑定邮箱和密码登录。' }}</p>
+    <p class="intro" role="note">根据有关要求暂不开放注册，实际账号体验请联系管理员。</p>
     <div class="mode-switch" role="group" aria-label="选择登录方式">
-      <button type="button" data-mode="email" :aria-pressed="mode === 'email'" :disabled="busy" @click="switchMode('email')">邮箱登录 / 注册</button>
+      <button type="button" data-mode="email" :aria-pressed="mode === 'email'" :disabled="busy" @click="switchMode('email')">邮箱登录</button>
       <button type="button" data-mode="password" :aria-pressed="mode === 'password'" :disabled="busy" @click="switchMode('password')">用户名 / 邮箱密码</button>
     </div>
     <form id="login-form" class="form" @submit.prevent="submit">

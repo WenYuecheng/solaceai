@@ -10,6 +10,7 @@ from time import perf_counter
 from typing import Any, Callable, Protocol
 
 import httpx
+from app.services.conversation_access import paid_post
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.retrievers import BaseRetriever
 from llama_index.core.schema import (
@@ -559,7 +560,7 @@ class SemanticReranker:
             len(query.encode("utf-8")) + sum(len(text.encode("utf-8")) + 64 for text in texts) + 256
         )
         reservation = guard_remote(s, "rerank", s.reranker_model, s.reranker_base_url, units)
-        response = httpx.post(
+        response = paid_post(
             f"{s.reranker_base_url.rstrip('/')}/rerank",
             headers={"Authorization": f"Bearer {s.reranker_api_key}"},
             json={

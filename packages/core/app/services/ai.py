@@ -17,6 +17,7 @@ from app.core.config import Settings
 from app.core.enums import IntentType, RiskLevel
 from app.schemas.dtos import AiMessage
 from app.services.api_budget import ApiBudget, guard_remote, conservative_input_units
+from app.services.conversation_access import check_turn, paid_post
 
 logger = logging.getLogger(__name__)
 
@@ -239,7 +240,7 @@ class AiClient:
         if event_sink is not None:
             data = asyncio.run(self._stream_decision(payload, event_sink, cancel_event))
         else:
-            response = httpx.post(
+            response = paid_post(
                 f"{self.settings.openai_base_url.rstrip('/')}/chat/completions",
                 headers={"Authorization": f"Bearer {self.settings.openai_api_key}"},
                 json=payload,
@@ -285,6 +286,10 @@ class AiClient:
         return {"answer": content}
 
     async def _stream_decision(self, payload, event_sink, cancel_event=None):
+        async with asyncio.timeout(check_turn()):
+            return await self._stream_decision_body(payload, event_sink, cancel_event)
+
+    async def _stream_decision_body(self, payload, event_sink, cancel_event=None):
         """流式调度大语言模型决策请求与 Token 实时广播 (Stream Decision & Broadcast Tokens)
 
         执行逻辑：
@@ -320,6 +325,7 @@ class AiClient:
             ) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():
+                    check_turn()
                     if cancel_event is not None and cancel_event.is_set():
                         raise RuntimeError("Cancelled model stream")
                     if not line.startswith("data:"):
@@ -408,7 +414,7 @@ class AiClient:
         }
         if response_format == "json_object":
             payload["format"] = "json"
-        response = httpx.post(
+        response = paid_post(
             f"{self.settings.ollama_base_url}/api/chat", json=payload, timeout=60
         )
         response.raise_for_status()
@@ -431,6 +437,7 @@ class AiClient:
             ) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():
+                    check_turn()
                     if not line:
                         continue
                     data = json.loads(line)
@@ -464,7 +471,7 @@ class AiClient:
             conservative_input_units(messages),
             self.settings.ai_max_tokens,
         )
-        response = httpx.post(
+        response = paid_post(
             f"{self.settings.openai_base_url.rstrip('/')}/chat/completions",
             headers=headers,
             json=payload,
@@ -482,6 +489,11 @@ class AiClient:
         return data["choices"][0]["message"]["content"]
 
     async def _openai_stream(self, messages: list[AiMessage]):
+        async with asyncio.timeout(check_turn()):
+            async for token in self._openai_stream_body(messages):
+                yield token
+
+    async def _openai_stream_body(self, messages: list[AiMessage]):
         """调用兼容 OpenAI 规范的 HTTP API 执行异步流式推理"""
         headers = {"Authorization": f"Bearer {self.settings.openai_api_key}"}
         payload = {
@@ -510,6 +522,7 @@ class AiClient:
             ) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():
+                    check_turn()
                     if not line.startswith("data: "):
                         continue
                     raw = line.removeprefix("data: ").strip()

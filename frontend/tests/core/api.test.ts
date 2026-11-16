@@ -39,3 +39,9 @@ describe('API client', () => {
     await expect(requestJson('/api/example')).rejects.toThrow('该文档质量不达标，请检查后重新上传')
   })
 })
+
+it('shows the registration closure notice returned by email login', async () => {
+  const notice = '根据有关要求暂不开放注册，实际账号体验请联系管理员。'
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ detail: notice }), { status: 403 })))
+  await expect(requestJson('/api/auth/email-login', { method: 'POST' })).rejects.toThrow(notice)
+})

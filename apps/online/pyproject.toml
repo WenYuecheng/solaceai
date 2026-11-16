@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solaceai-online"
+version = "1.0.0"
+requires-python = ">=3.11"
+dependencies = ["solaceai-core==1.0.0", "chromadb==0.5.23", "posthog==5.4.0"]
+
+[project.entry-points."solaceai.backends"]
+online = "apps.online.backend:OnlineBackend"
+
+[project.scripts]
+solaceai-online = "apps.online.main:run"
+
+[tool.setuptools]
+packages = ["apps.online"]
+package-dir = {"apps.online" = "."}
+
+[tool.setuptools.exclude-package-data]
+"*" = ["**/__pycache__/*", "**/*.pyc", ".env", ".env.*"]

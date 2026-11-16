@@ -130,6 +130,8 @@ class ApiBudget:
 
 def guard_remote(settings, kind: str, model: str, url: str, input_units: int, max_output_units: int = 0) -> str | None:
     """针对外部远程端点的预算看门狗；若端点为本地回环则直接放行。"""
+    from app.services.conversation_access import check_turn
+    check_turn()
     if is_local_endpoint(url):
         return None
     if not getattr(settings, 'paid_api_enabled', False):

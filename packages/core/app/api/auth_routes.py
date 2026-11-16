@@ -144,7 +144,7 @@ def send_code(payload: CodePayload, request: Request, db: DB) -> dict[str, Any]:
     """
     request_budget(db, request, 'send-code', payload.email, limit=6, seconds=3600, ip_limit=30)
     user = db.scalar(select(UserAccount).where(UserAccount.email == payload.email))
-    eligible = user is None or student(user)
+    eligible = student(user) or (user is None and get_settings().runtime_profile not in {'online', 'light'})
     # 对未注册用户与特权管理员保持相同的成功响应形态，防范账号探测
     if eligible:
         code = issue_code(db, payload.email, payload.purpose)
@@ -213,6 +213,9 @@ def email_login(payload: EmailLoginPayload, request: Request, response: Response
     request_budget(db, request, 'email-login', payload.email, limit=15, ip_limit=60)
     consume_code(db, payload.email, 'login', payload.code)
     user = db.scalar(select(UserAccount).where(UserAccount.email == payload.email))
+    if user is None and get_settings().runtime_profile in {'online', 'light'}:
+        db.commit()
+        raise HTTPException(403, '根据有关要求暂不开放注册，实际账号体验请联系管理员。')
     if user is None:
         # 验证码核验通过证明其对邮箱的所有权，自动创建新学生身份
         # 丢弃随机生成的强密码，对外不暴露默认密码

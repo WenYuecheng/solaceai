@@ -254,9 +254,27 @@ async def chat_stream(
     if "ROLE_ADMIN" in user.roles:
         raise HTTPException(403, "管理员账号只能查看后台记录，不能发起学生对话。")
     from app.services.chat_backends import settings_for_backend
-    service = ChatService(db, settings_for_backend(get_settings(), getattr(request,'modelBackend',None)))
+    settings = settings_for_backend(get_settings(), getattr(request, 'modelBackend', None))
+    lease = None
+    if settings.runtime_profile in {'online', 'light'}:
+        from app.services.conversation_access import ConversationAccess
+        try:
+            access = await run_in_threadpool(ConversationAccess, settings)
+            lease = await run_in_threadpool(access.acquire, user.id)
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(503, '对话服务暂不可用，请稍后重试。') from None
+    try:
+        service = ChatService(db, settings)
+    except BaseException:
+        if lease is not None:
+            lease.release()
+        raise
+    from app.services.conversation_access import protected_stream
+    stream = protected_stream(service, user, request, lease) if lease is not None else service.stream_chat(user, request)
     return StreamingResponse(
-        service.stream_chat(user, request),
+        stream,
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
