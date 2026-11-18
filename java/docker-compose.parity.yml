@@ -1,0 +1,41 @@
+name: solaceai-java
+services:
+  solaceai:
+    build: .
+    image: solaceai:0.1.0
+    # Shared inference and retrieval services run on the same Linux host.
+    network_mode: host
+    user: "10001:10001"
+    environment:
+      SPRING_PROFILES_ACTIVE: parity
+      SERVER_ADDRESS: 127.0.0.1
+      SERVER_PORT: ${SERVER_PORT:-8080}
+      MINDBRIDGE_BOOTSTRAP_DEMO_USERS: "false"
+      MINDBRIDGE_BOOTSTRAP_BUNDLED_KNOWLEDGE: ${MINDBRIDGE_BOOTSTRAP_BUNDLED_KNOWLEDGE:-false}
+      MINDBRIDGE_BOOTSTRAP_ADMIN_PASSWORD: ${MINDBRIDGE_BOOTSTRAP_ADMIN_PASSWORD:-}
+      MODEL_BACKEND: ${MODEL_BACKEND:-local}
+      LOCAL_FALLBACK_ENABLED: ${LOCAL_FALLBACK_ENABLED:-false}
+      AI_PROVIDER: ${AI_PROVIDER:-ollama}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://127.0.0.1:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-mindbridge-qwen2.5-7b-ft:latest}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      LOCAL_GATEWAY_URL: ${LOCAL_GATEWAY_URL:-http://127.0.0.1:18181}
+      LOCAL_GATEWAY_TOKEN: ${LOCAL_GATEWAY_TOKEN:-}
+      REDIS_HOST: ${REDIS_HOST:-127.0.0.1}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DATABASE: ${REDIS_DATABASE:-0}
+      KNOWLEDGE_BACKEND: ${KNOWLEDGE_BACKEND:-bm25}
+      BGE_WORKER_URL: ${BGE_WORKER_URL:-http://127.0.0.1:8091}
+      MILVUS_URL: ${MILVUS_URL:-http://127.0.0.1:19530}
+      MILVUS_TOKEN: ${MILVUS_TOKEN:-}
+      MILVUS_COLLECTION: ${MILVUS_COLLECTION:-mindbridge_knowledge}
+      BGE_RERANKER_ENABLED: ${BGE_RERANKER_ENABLED:-false}
+    volumes:
+      - mindbridge-parity-data:/app/data
+
+volumes:
+  mindbridge-parity-data:
+    name: ${PARITY_DATA_VOLUME:-mindbridge_mindbridge-parity-data}

@@ -1,0 +1,16 @@
+target/
+.m2/
+.tools/
+.idea/
+.vscode/
+*.iml
+data/
+logs/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+src/main/resources/static/
+src/main/resources/knowledge/
+src/main/resources/rag-eval/

@@ -21,6 +21,19 @@
 
 ---
 
+## Python 与 Java 后端
+
+这是同一个 SolaceAI 项目的两个后端实现，共用仓库现有的 [Vue 前端](frontend/)，不共用业务数据库。
+
+| 版本 | 后端及入口 | 启动说明 |
+| --- | --- | --- |
+| **Python（原版）** | FastAPI + LangGraph：[`packages/core`](packages/core/) 与 [`apps/offline`](apps/offline/)、[`apps/online`](apps/online/) | [Python 启动与部署](#-极速上手与部署-quick-start) |
+| **Java（独立实现）** | Java 17 + Spring Boot / Spring AI + LangGraph4j：[`java/`](java/) | [Java 构建、运行与前端接入](java/README.md) |
+
+Java 目录只发布后端源码、运行资源与配置示例，不复制前端，也不包含业务数据、知识库原文、模型权重或评测数据。下文的架构图、运行截图和历史指标来自 **Python 版及原模型实验**，不是 Java 版的评测成绩。
+
+---
+
 ## 📸 实际运行截图
 
 以下截图于 **2026-11-16** 启动本地 Vue 前端与 FastAPI 后端后，通过浏览器实际操作拍摄。使用独立演示账号、全新 SQLite 演示库和示例提问，管理端报告由本次对话自动生成；截图不包含真实用户资料。
@@ -244,6 +257,7 @@ solaceai/
 │   └── evaluation.md                 # 权威性能基准评测报告 (100% Hit@4, RAGAS 深度分析)
 ├── evaluation/                       # 历史评测说明，本次不同步本地评测数据
 ├── frontend/                         # Vue 3 + TypeScript + Pinia / Element Plus 前端
+├── java/                             # 独立的 Spring Boot 后端，复用同一前端
 ├── deploy/                           # Docker Compose 编排、环境预设与模块化依赖
 └── tests/                            # 完整项目测试目录，本次精简上传未包含
 ```

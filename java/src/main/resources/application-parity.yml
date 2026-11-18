@@ -1,0 +1,53 @@
+# Explicit opt-in profile: local isolated storage and inert outbound delivery.
+server:
+  address: ${SERVER_ADDRESS:127.0.0.1}
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/parity/mindbridge;MODE=MySQL;DATABASE_TO_LOWER=TRUE
+  h2:
+    console:
+      enabled: false
+  ai:
+    mcp:
+      client:
+        enabled: false
+      server:
+        enabled: false
+mindbridge:
+  bootstrap:
+    bundled-knowledge: ${MINDBRIDGE_BOOTSTRAP_BUNDLED_KNOWLEDGE:false}
+    demo-users: ${MINDBRIDGE_BOOTSTRAP_DEMO_USERS:false}
+    admin-password: ${MINDBRIDGE_BOOTSTRAP_ADMIN_PASSWORD:}
+  ai:
+    provider: ${AI_PROVIDER:ollama}
+  memory:
+    use-chroma: false
+  knowledge:
+    use-chroma: false
+  parity:
+    knowledge:
+      writer-lock-path: data/parity/knowledge/writer.lock
+      backend: ${KNOWLEDGE_BACKEND:bm25}
+      bge-url: ${BGE_WORKER_URL:http://127.0.0.1:8091}
+      milvus-url: ${MILVUS_URL:http://127.0.0.1:19530}
+      milvus-token: ${MILVUS_TOKEN:}
+      collection: ${MILVUS_COLLECTION:mindbridge_knowledge}
+      reranker-enabled: ${BGE_RERANKER_ENABLED:false}
+      document-python: ${DOCLING_PYTHON:}
+      document-module-path: ${DOCLING_MODULE_PATH:}
+  runtime:
+    state-path: data/parity/memory.sqlite
+    checkpoint-path: data/parity/checkpoints.sqlite
+    lock-path: data/parity/turn-locks
+    redis-namespace: mindbridge:parity
+    default-backend: ${MODEL_BACKEND:local}
+    local-model-enabled: true
+    local-fallback-enabled: ${LOCAL_FALLBACK_ENABLED:false}
+    local-gateway-url: ${LOCAL_GATEWAY_URL:http://127.0.0.1:18181}
+    local-gateway-token: ${LOCAL_GATEWAY_TOKEN:}
+  mcp:
+    email:
+      mode: log
+      mcp-server-delivery-mode: log
+    excel:
+      local-path: ./data/parity/reports.xlsx
