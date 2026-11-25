@@ -129,6 +129,7 @@ graph TD
 - **微内核物理隔离** ：系统沉淀核心业务微内核包 `packages/core/app`，将状态机编排、多阶段检索算法、危机评估与通用实体集中维护，彻底解耦具体部署运行环境。
 - **多端适配器矩阵** ：
   - `apps/offline`：线下生产完整适配器，搭载 MySQL、Milvus 分布式向量库与 BGE-M3 深度重排，支撑校级高并发私有化交付；
+  - `apps/online`：在线轻量适配器，基于 SQLite + Chroma 与云端大模型 API，适合低资源容器快速体验与演示；
   - `apps/rag_worker`：独立检索计算工作进程，实现重型模型计算与业务 Web 容器的物理进程隔离。
 - **静态 AST 架构边界检测** ：配备 [`scripts/check-boundaries.py`](scripts/check-boundaries.py)，通过 Python 抽象语法树分析强制执行单向依赖约束，彻底杜绝下层反向污染。
 
@@ -203,7 +204,7 @@ flowchart TD
 
 ## ⚡ 极速上手与部署 (Quick Start)
 
-本次同步包含 Vue 前端、FastAPI 共享核心、在线/线下后端与 RAG Worker 源码，以及前端图片字体、技能提示词、分词器等必要运行资源。配置示例见 `.env.example`。实际 `.env`、数据库、会话记录、知识库原文与索引、模型权重、训练产物、日志及本地中间数据不随本次同步上传，需在部署环境自行配置。
+本次同步包含 Vue 前端、FastAPI 共享核心、在线/线下后端与 RAG Worker 源码，以及前端图片字体、技能提示词、分词器等必要运行资源。配置示例见根 `.env.example` 与 `apps/offline/.env.example`、`apps/online/.env.example`。实际 `.env`、数据库、会话记录、知识库原文与索引、模型权重、训练产物、日志及本地中间数据不随公开仓库上传，需在部署环境自行配置。
 
 ### 本地源码安装
 

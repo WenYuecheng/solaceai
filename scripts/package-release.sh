@@ -26,7 +26,11 @@ rsync -a "$ROOT_DIR/" "$STAGE_DIR/$PROJECT_NAME/" \
   --exclude '**/*.egg-info/' \
   --exclude '**/build/' \
   --exclude '.git/' \
+  --exclude '.github-release/' \
   --exclude 'archive/' \
+  --exclude '毕设/' \
+  --exclude '求职面试/' \
+  --exclude 'resume/' \
   --exclude '.venv/' \
   --exclude '.venv-rag/' \
   --exclude '.venv-eval/' \

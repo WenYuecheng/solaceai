@@ -35,6 +35,8 @@ models/bge-reranker-large/
 archive/
 evaluation/
 毕设/
+求职面试/
+.github-release/
 docs/
 # 仅保留离线检索验收所需的小数据集
 !evaluation/

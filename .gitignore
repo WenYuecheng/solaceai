@@ -56,6 +56,9 @@ experiments/qwen3_bonus/artifacts/
 /dist/
 /archive/
 /resume/
+/毕设/
+/求职面试/
+/.github-release/
 /.idea/
 /.run/
 /.chart-data-*/
