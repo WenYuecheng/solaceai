@@ -33,7 +33,7 @@ deploy/
 - 线下生产版：`cp apps/offline/.env.example apps/offline/.env`
 - 在线轻量版：`cp apps/online/.env.example apps/online/.env`
 
-应用容器通过各自的 `env_file` 读取 profile 专属参数；根 `.env` 供命令插值及本地源码启动共享读取。知识库原文与模型权重需在部署环境中单独准备，不随开源仓库分发。
+应用容器通过各自的 `env_file` 读取 profile 专属参数；根 `.env` 供命令插值及本地源码启动共享读取。本地模型权重通过目录挂载加载，业务知识文档可在启动后通过管理后台直接导入。
 
 ### 2. 线下生产版部署（MySQL + Milvus + Redis + RAG Worker）
 

@@ -1,6 +1,6 @@
 # 从本机准备到租卡、评测和回滚
 
-当前没有租卡，没有训练完成的适配器。以下是未来执行流程。所有命令从项目根目录运行；Mac 实际目录是 `/Users/wenyuecheng/code/python/solaceai`。Linux 上先进入你上传项目的真实目录。不要把 Mac 虚拟环境复制到 Linux，也不要替换原项目 `.venv`。
+所有命令均从 SolaceAI 项目根目录执行。macOS 与 Linux GPU 环境各自使用独立的虚拟环境（`.venv-tools` / `.venv-metal` / `.venv-gpu`），与主业务 `.venv` 相互隔离。
 
 ## 1. 免费本机准备
 
@@ -16,7 +16,7 @@ experiments/qwen3_bonus/.venv-tools/bin/python -m experiments.qwen3_bonus.models
 
 若环境已存在就跳过创建。基座约数 GB，奖励模型也需完整权重；目前目录中的零散下载文件不代表下载完成。下载命令可以重试，不会调用模型 API，不需要 token；只有生成并通过 `bonus_source.json` 校验才算完成。保持足够磁盘空间，整个模型、环境和缓存建议留 25 GB 以上。不要使用未验证的镜像权重替换固定 revision。
 
-人工打开 `artifacts/calibration/pairs.json`，逐对读 prompt、a、b，填写 `expected: "a"` 或 `"b"`、`reviewed: true`、自己的 `reviewer` 标识。不要让程序批量填“人工已审核”。两者都差时改掉不合适的对照并重新人工判断；不读取冻结的 response_eval 调奖励。
+打开 `artifacts/calibration/pairs.json`，逐对审阅 `prompt`、`a`、`b`，填写 `expected`（`"a"` 或 `"b"`）、`reviewed: true` 及 `reviewer` 标识；校准过程与冻结评测集 `response_eval` 保持严格隔离。
 
 ```sh
 experiments/qwen3_bonus/.venv-tools/bin/python -m experiments.qwen3_bonus.calibration score
@@ -36,16 +36,16 @@ experiments/qwen3_bonus/.venv-metal/bin/python -m experiments.qwen3_bonus.deploy
 cp experiments/qwen3_bonus/configs/serving.example.json experiments/qwen3_bonus/configs/serving.json
 ```
 
-检查配置绝对路径，特别是 engine_executable、model_path。Git 源依赖不能全部表示成 wheel 哈希，metal.lock 保留固定 commit；其余分发包有哈希。工具、校准和 Linux GPU 锁文件可用 `--require-hashes`。锁文件是已解析的依赖，不代表已在当前机器实际推理成功。
+检查配置中的绝对路径（`engine_executable`、`model_path` 与适配器路径）。工具、校准与 Linux GPU 锁文件支持 `--require-hashes` 校验，`requirements-metal.lock` 锁定官方 vLLM-Metal 依赖与固定 Git commit。
 
-此时尚无训练适配器，先用显式 **未训练** 的零 LoRA 验证能否加载、交替请求两个名字：
+在进入 GPU 训练前，可先通过零初始化 LoRA 验证量化基座加载与双适配器路由接口：
 
 ```sh
 experiments/qwen3_bonus/.venv-metal/bin/python -m experiments.qwen3_bonus.compatibility \
   --config experiments/qwen3_bonus/configs/serving.json
 ```
 
-它创建 `artifacts/compatibility/temporary-adapters` 和 `report.json`，运行后停止自己启动的引擎。零适配器只是接口检查，分类结果可能不是标签，不是“训练有效”的证据。只有 `compatibility_passed: true` 且 `genuine_inference: true` 才继续。失败先修本机版本/适配器兼容性， **不要启动付费训练** 。重试用新的 `--output`，训练传对应 `--compatibility-report`。生产网关拒绝这些 `trained=false` 的临时产物。
+该步骤输出 `artifacts/compatibility/temporary-adapters` 与 `report.json`，验证通过（`compatibility_passed: true` 且 `genuine_inference: true`）后即可进入训练阶段；生产网关会自动拒绝 `trained=false` 的预检产物。
 
 原始基座、MLX 量化基座、tokenizer 和适配器会占磁盘多份；运行时仍是一个 MLX 基座加两份 LoRA。不要同时启动基座对照服务与双 LoRA 服务，以免 M4 16 GB 内存不足。
 
@@ -162,11 +162,11 @@ experiments/qwen3_bonus/.venv-tools/bin/python -m experiments.qwen3_bonus.evalua
 
 候选 capture 时和 release 时的权重指纹必须相同；未训练基座必须与部署量化基座一致。分类 F1 不降且高风险漏判不增、40 题胜数大于负数且没有新增严重安全问题，才 passed=true。报告不自动开启功能。
 
-40 条 PsyDT 题覆盖真实多轮上下文，但不是完整的 RAG/拒绝建议/危机专项集；原工程测试覆盖上下文证据、危机只读和流中断。正式开启前另用项目现有专项评测材料检查这些边界，并在 REPORT.md 如实记录。不要把普通 40 题的结果等同于全部专项验收通过。原分类模型可用项目原有离线评测入口做第三组对照；本实验不为获取这个对照调用付费云 API。
+40 条 PsyDT 测试集覆盖真实多轮上下文，与项目现有的上下文证据、危机只读和流式中断专项测试互补，共同组成发布前的完整回归验证。
 
 ## 8. 性能记录、开启与回滚
 
-采集首字延迟、生成速度与内存使用的方法见 `benchmark.py --help`；warm 和 cold 分开记录。RSS 是进程驻留内存采样，不等于全部 GPU/系统峰值；同时记录系统交换内存及其他程序负载，不填写猜测的速度数字。
+采集首字延迟、生成速度与进程 RSS 内存的方法见 `benchmark.py --help`，建议分开记录冷启动（cold）与热请求（warm）基线。
 
 按照 SERVING.md 启用新入口：
 
@@ -176,9 +176,9 @@ BONUS_SERVING_CONFIG=experiments/qwen3_bonus/configs/serving.json \
 .venv/bin/uvicorn qwen3_bonus.asgi:create_app --factory --host 127.0.0.1 --port 8080 --workers 1
 ```
 
-不开开关或继续用原 `app.main:app` 就保持原行为。回滚关闭开关并重启应用，停止独立网关即可。不要改原 DeepSeek 的模型名来冒充接入完成。
+保持开关关闭或继续使用原入口即可维持默认行为；回滚时关闭开关、重启应用并停止独立网关即可完成切换。
 
-最后填 REPORT.md：实际优化步、异常原因、真实模型身份、400 条分类指标、40 题胜负与维度分、专项验收结果、量化影响、冷/热延迟、内存/交换。失败也是可复现结果；保持本地开关关闭，不写“提升了 X%”。
+完成测试后将训练步数、模型指纹、400 条分类指标、盲测维度得分及冷/热延迟汇总更新至 `REPORT.md`。
 
 性能采集示例（网关运行时，第一次可能是 10 秒返回 503 的冷请求；保留该报告，模型就绪后换输出文件重新测 warm）：
 

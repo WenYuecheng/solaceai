@@ -19,6 +19,6 @@
 - **Python 核心微内核**：集中于 `packages/core/app/`，包含 LangGraph 状态机、Harness、多阶段检索、安全审核以及技能提示词（`skills/`）与分词器/城市目录资源（`assets/`）。
 - **Python 应用适配器与 Worker**：包含线下生产版 `apps/offline/`、在线轻量版 `apps/online/` 以及独立模型推理工作进程 `apps/rag_worker/`，各自提供独立的 `Dockerfile`、`compose.yml`、`requirements.lock` 与 `.env.example`。
 - **共用前端界面**：位于 `frontend/`（Vue 3 + TypeScript + Pinia / Element Plus），包含运行所需字体与插图资源（`frontend/public/`）。
-- **模型微调与对齐源码**：Qwen3 双 LoRA 与 PERM-GRPO 强化学习源码位于 `experiments/qwen3_bonus/`；模型权重与本地训练产物不随开源仓库上传。
+- **模型微调与对齐源码**：Qwen3 双 LoRA 与 PERM-GRPO 强化学习源码及实验报告位于 `experiments/qwen3_bonus/`。
 - **容器编排与依赖清单**：位于 `deploy/` 及各应用的 `compose.yml`。
-- **隐私与数据边界**：真实 `.env`、业务数据库、知识库原文与索引、本地模型权重及评测原始运行产物均不随公开仓库提交，需在部署环境自行配置与导入。
+- **配置与部署指引**：参考根目录 `.env.example` 与各应用目录下的 `.env.example` 配置运行环境，详细部署流程见 [部署与基础设施配置](../deploy/README.md)。

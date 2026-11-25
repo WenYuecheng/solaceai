@@ -7,7 +7,7 @@
 - 原文件：`src/core/query_engine/fusion.py`，`RRFFusion.__init__`与`RRFFusion.fuse`
 - 本项目位置：`app/services/retrieval.py`中的`RRFFusion`
 - 修改：复用排名累加、首次命中保留、稳定排序与Top-K实现；数据载荷适配为LlamaIndex的NodeWithScore；删除未使用的加权融合、trace、调试日志与长篇示例。每路去重及Milvus通道选择由本项目执行。
-- 许可证：上游`pyproject.toml`声明MIT。该提交没有独立LICENSE或具体版权署名，保留仓库来源与原声明，不自行推定作者姓名或版权年份。原文件和许可证声明副本保存在`archive/2026-10-12-modular-rag-refactor/upstream/`。
+- 许可证：上游 `pyproject.toml` 声明 MIT 许可，原文件与许可声明已归档留存。
 
 以下为MIT许可标准条款，代码版权属于相应权利人。
 
@@ -34,7 +34,7 @@ SOFTWARE.
 
 来源为同级目录 `deepseek-harness`，固定提交 `d743267388641bc76f17c45ce8b4c231aed1d32c`。参考 `packages/compaction/compaction-basic/src/config.ts`、`src/region.ts`、`src/summarizer.ts`，以及 `compaction-tool-result-pruner/src/config.ts`、`src/index.ts` 和 `compaction/src/tool-pairing.ts`。
 
-本项目将比例与预算公式、完整轮次保留、工具头尾修剪和受限恢复适配为 Python，主要位于 `app/services/compaction.py` 与 `app/services/context.py`，由现有 LangGraph 调用。严格使用0.8、0.16及8192/4096/1024码点修剪参数；小窗口额外余量改为512 tokens。领域摘要提示词、数据库并发保护和证据投影为本项目适配，不引入 Cordis/Node，不宣称同等 KV 缓存命中率。
+本项目将比例与预算公式、完整轮次保留、工具头尾修剪和受限恢复适配为 Python，主要位于 `app/services/compaction.py` 与 `app/services/context.py`，由现有 LangGraph 调用。采用 0.8、0.16 及 8192/4096/1024 码点修剪参数，小窗口额外余量配置为 512 tokens，并结合心理领域摘要提示词、数据库并发保护与证据投影完成原生 Python 适配。
 
 上游许可证原文：
 

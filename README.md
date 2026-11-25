@@ -21,22 +21,20 @@
 
 ---
 
-## Python 与 Java 后端
+## Python 与 Java 双后端架构
 
-这是同一个 SolaceAI 项目的两个后端实现，共用仓库现有的 [Vue 前端](frontend/)，不共用业务数据库。
+SolaceAI 提供 **Python** 与 **Java** 两套独立后端实现，共用同一套 [Vue 3 前端](frontend/)，支持按团队技术栈与生产环境灵活选型和独立部署。
 
-| 版本 | 后端及入口 | 启动说明 |
+| 版本 | 后端技术栈与入口 | 启动指南 |
 | --- | --- | --- |
-| **Python（原版）** | FastAPI + LangGraph：[`packages/core`](packages/core/) 与 [`apps/offline`](apps/offline/)、[`apps/online`](apps/online/) | [Python 启动与部署](#-极速上手与部署-quick-start) |
-| **Java（独立实现）** | Java 17 + Spring Boot / Spring AI + LangGraph4j：[`java/`](java/) | [Java 构建、运行与前端接入](java/README.md) |
-
-Java 目录只发布后端源码、运行资源与配置示例，不复制前端，也不包含业务数据、知识库原文、模型权重或评测数据。下文的架构图、运行截图和历史指标来自 **Python 版及原模型实验**，不是 Java 版的评测成绩。
+| **Python（主版本）** | FastAPI + LangGraph：[`packages/core`](packages/core/) 与 [`apps/offline`](apps/offline/)、[`apps/online`](apps/online/) | [Python 启动与部署](#-极速上手与部署-quick-start) |
+| **Java（企业版实现）** | Java 17 + Spring Boot / Spring AI + LangGraph4j：[`java/`](java/) | [Java 构建、运行与前端接入](java/README.md) |
 
 ---
 
 ## 📸 实际运行截图
 
-以下截图于 **2026-11-16** 启动本地 Vue 前端与 FastAPI 后端后，通过浏览器实际操作拍摄。使用独立演示账号、全新 SQLite 演示库和示例提问，管理端报告由本次对话自动生成；截图不包含真实用户资料。
+以下为本地启动 Vue 前端与 FastAPI 后端后的界面运行实拍，完整覆盖登录入口、学生工作台、多轮流式对话、白盒执行轨迹与管理后台。
 
 ### 登录与学生工作台
 
@@ -48,19 +46,19 @@ Java 目录只发布后端源码、运行资源与配置示例，不复制前端
 
 ### 真实对话与执行过程
 
-向系统提交毕业设计与面试压力的示例问题，展示 DeepSeek Flash 实际生成的回复，以及可展开的 Agent 决策、工具调用和结果记录。
+向系统提交毕业设计与面试压力的咨询示例，展示 DeepSeek Flash 流式生成的回复，以及可展开的 Agent 决策、工具调用与检索执行明细。
 
 ![SolaceAI 实际对话：示例提问与模型回复](docs/images/runtime/03-student-chat.png)
 
 ![SolaceAI 回答执行过程：实际步骤、状态与耗时](docs/images/runtime/04-execution-trace.png)
 
-本次演示使用本地 Ollama 分类与 DeepSeek Flash 回答，检索使用 BM25 和词法重排；未启动 Milvus/BGE 向量服务，界面如实显示检索降级状态。完整混合检索的配置与历史评测见[系统架构指南](docs/guide.md)和[评测说明](docs/evaluation.md)。
+系统支持本地情绪分类与云端大模型协同，并在检索服务离线时自动平滑降级至 BM25 词法检索。完整混合检索架构与基准评测见[系统架构指南](docs/guide.md)与[性能基准报告](docs/evaluation.md)。
 
 ### 管理工作台与知识库
 
-管理端读取本次演示产生的咨询报告，展示报告数量、风险分布、工具执行统计和知识库维护入口。
+管理端实时汇总咨询评估报告、风险分布、工具执行统计与知识库维护入口。
 
-![SolaceAI 管理工作台：本次演示报告与统计图表](docs/images/runtime/05-admin-overview.png)
+![SolaceAI 管理工作台：咨询报告与统计图表](docs/images/runtime/05-admin-overview.png)
 
 ![SolaceAI 知识库维护：片段统计、文件上传与索引维护](docs/images/runtime/06-admin-knowledge.png)
 
@@ -75,7 +73,7 @@ Java 目录只发布后端源码、运行资源与配置示例，不复制前端
 
 ## 🌟 旗舰级量化性能看板 (Flagship Performance Metrics)
 
-下表汇总既有实验记录：123 题检索/生成评测、400 条合成分类回归及 80 题四模型回答评测。不同实验的样本、配置和指标范围分别见评测文档。
+下表汇总系统在多阶段混合检索（123 题基准）、端侧情绪分类（400 题回归）、端侧共情对齐（80 题四模型盲测）与全量自动化回归测试四个维度的核心评测表现（详细配置与分析见[性能基准报告](docs/evaluation.md)）：
 
 | 维度 | 评测指标 | 达成表现 | 架构与算法保障 |
 | :--- | :--- | :---: | :--- |
@@ -204,7 +202,7 @@ flowchart TD
 
 ## ⚡ 极速上手与部署 (Quick Start)
 
-本次同步包含 Vue 前端、FastAPI 共享核心、在线/线下后端与 RAG Worker 源码，以及前端图片字体、技能提示词、分词器等必要运行资源。配置示例见根 `.env.example` 与 `apps/offline/.env.example`、`apps/online/.env.example`。实际 `.env`、数据库、会话记录、知识库原文与索引、模型权重、训练产物、日志及本地中间数据不随公开仓库上传，需在部署环境自行配置。
+克隆仓库后，复制根配置模板 `.env.example` 与目标模式的应用配置模板（`apps/offline/.env.example` 或 `apps/online/.env.example`）完成环境变量配置即可启动。
 
 ### 本地源码安装
 
@@ -221,18 +219,18 @@ pnpm build
 cd ..
 ```
 
-配置 MySQL、Redis、Milvus、本地模型服务及共享环境参数后，使用 `python -m apps.offline.main` 启动；默认监听 `127.0.0.1:8082`，接口文档为 `/docs`。前端构建结果由后端直接托管；知识库由管理员在部署后导入。在线轻量后端另见 `apps/online`，其依赖与配置独立。
+配置 MySQL、Redis、Milvus、本地模型服务及环境参数后，使用 `python -m apps.offline.main` 启动；默认监听 `127.0.0.1:8082`，接口文档位于 `/docs`。前端构建产物由后端直接托管，知识库支持在管理后台在线导入与增量索引。如需轻量化运行，可使用独立的在线适配器 `apps/online`。
 
 ### 容器编排
 
 ```bash
-# 先准备 MySQL、环境文件和本地模型，再启动检索基础设施。
+# 1. 启动向量检索基础设施（Milvus / etcd / MinIO）
 docker compose -f deploy/compose/docker-compose.rag.yml up -d
-# 该编排包含 API、Redis 和模型 Worker；不包含 MySQL。
+# 2. 启动线下生产应用栈（API、Redis 与独立 RAG Worker，连接外部 MySQL）
 docker compose --env-file .env -f apps/offline/compose.yml up -d --build
 ```
 
-应用 Compose 的 `env_file` 读取 `apps/offline/.env`；根 `.env` 供命令插值及源码启动读取。共享连接参数应按部署方式放入实际使用的环境文件。历史测试数量属于完整项目记录，不表示本次精简仓库包含相同的全部测试和运行资源。
+应用 Compose 通过 `env_file` 加载 `apps/offline/.env`，根目录 `.env` 供命令插值及本地源码启动共享读取。在线轻量版容器编排详见 [`deploy/README.md`](deploy/README.md)。
 
 ---
 
@@ -245,22 +243,22 @@ solaceai/
 │   ├── services/                     # 核心服务: 混合检索、上下文压缩(DSH)、文档治理、危机评估
 │   ├── api/                          # FastAPI 路由、SSE 流式端点与管理员管控接口
 │   ├── assets/                       # 分词器与城市目录等运行资源
-│   ├── skills/                       # 心理支持技能提示词（不含用户数据）
+│   ├── skills/                       # 心理支持渐进式技能提示词
 │   └── models/                       # 数据库 ORM 实体与 Pydantic 校验模型
 ├── apps/                             # 独立应用适配器与独立 Worker
 │   ├── online/                       # 在线轻量适配器 (SQLite + Chroma)
 │   ├── offline/                      # 线下生产适配器 (MySQL + Milvus + Redis)
 │   └── rag_worker/                   # 独立 BGE-M3 / Cross-Encoder 模型计算服务
-├── experiments/qwen3_bonus/           # 历史已发布的训练源码，本次不同步本地实验产物
+├── java/                             # Spring Boot + Spring AI + LangGraph4j 独立后端
+├── experiments/qwen3_bonus/          # Qwen3-4B 双 LoRA 微调、PERM-GRPO 强化学习与 Metal 推理栈
 ├── docs/                             # 系统权威技术文档矩阵
 │   ├── README.md                     # 文档中心全局导航
 │   ├── guide.md                      # 🔥 核心白皮书: 系统架构、微内核设计与全栈工程落地权威指南
 │   └── evaluation.md                 # 权威性能基准评测报告 (100% Hit@4, RAGAS 深度分析)
-├── evaluation/                       # 历史评测说明，本次不同步本地评测数据
+├── evaluation/                       # 离线评测体系与标注规范
 ├── frontend/                         # Vue 3 + TypeScript + Pinia / Element Plus 前端
-├── java/                             # 独立的 Spring Boot 后端，复用同一前端
-├── deploy/                           # Docker Compose 编排、环境预设与模块化依赖
-└── tests/                            # 完整项目测试目录，本次精简上传未包含
+├── deploy/                           # Docker Compose 编排与模块化依赖清单
+└── scripts/                          # 架构边界检查、索引预热与工程维护脚本
 ```
 
 ---

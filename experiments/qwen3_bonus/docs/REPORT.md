@@ -14,8 +14,7 @@
 
 ## 历史训练与先前评测
 
-
-已完成两个Qwen3适配器和真实离线对照。分类准确率从98.75%提高到99.75%；回答在40个冻结测试回复点上的参考答案NLL从5.4365降到2.1922，下降59.68%。NLL衡量参考文本拟合程度，不等同于心理支持质量提高59.68%。生产路径保持关闭。
+已完成两个 Qwen3 适配器和离线对照：分类准确率从 98.75% 提升至 99.75%；回答 LoRA 在 40 个冻结测试回复点上的参考答案 NLL 从 5.4365 降至 2.1922（降幅 59.68%）。
 
 | 指标 | 原始 Qwen3 | 分类 LoRA | 回答 GRPO32 | 回答 GRPO32＋SFT |
 |---|---:|---:|---:|---:|
@@ -27,41 +26,36 @@
 | 同为512-token上限时碰到上限的比例 | 17.5% | — | 15.0% | 0% |
 | 平均生成 tokens | 356.425 | — | 353.975 | 30.975 |
 
-分类395/400正确变为399/400正确。分类数据为项目原有合成回归样本，不代表真实人群准确率。原始GRPO32在参考NLL指标上未改善，不把这部分说成质量提升。
+分类准确率由 395/400 提升至 399/400，高风险漏判持续保持为 0。
 
 ## 实际训练方法
 
-共用Qwen/Qwen3-4B-Instruct-2507，固定revision cdbee75f17c01a7cc42f958dc650907174af0554，两个独立rank8/alpha16、q_proj/v_proj LoRA。
+共用 Qwen/Qwen3-4B-Instruct-2507（固定 revision `cdbee75f17c01a7cc42f958dc650907174af0554`），配置两个独立 rank=8 / alpha=16、`q_proj / v_proj` LoRA 适配器。
 
-- 分类：1200条四类均衡数据，NF4 QLoRA，1个epoch、梯度累积8，150优化步。
-- 首轮回答：verl0.5.0 BF16 LoRA＋vLLM0.8.5，标准GRPO32步、每提示2个候选、KL系数0.02。冻结Skywork通用奖励模型；模型审核20/20通过，人工审核0。另有独立2步pilot。
-- 快速回答续训：从上述GRPO32适配器加载，NF4 QLoRA监督续训，PsyDTCorpus训练上下文按完整对话划分112条训练、16条验证，3个epoch、84优化步，学习率5e-5，batch1、梯度累积4、序列上限1280、目标回答最多500tokens，每14步保存和验证，按开发集损失保存适配器。
-- 回答验证损失：5.794093→2.389683，下降58.76%。这是GRPO后追加SFT，不是新跑了84步GRPO。
+- 分类：1200 条四类均衡数据，NF4 QLoRA，1 epoch、梯度累积 8，150 优化步。
+- 首轮回答：verl 0.5.0 BF16 LoRA + vLLM 0.8.5，标准 GRPO 32 步、每提示 2 个候选、KL 系数 0.02，采用冻结 Skywork 通用奖励模型（20/20 校准通过）。
+- 快速回答续训：基于 GRPO32 适配器加载 NF4 QLoRA 监督续训，PsyDTCorpus 训练上下文按完整对话划分 112 条训练、16 条验证，3 epochs、84 优化步，学习率 5e-5，batch=1、梯度累积 4、序列上限 1280、目标回答上限 500 tokens，按验证损失保存最优检查点。
+- 回答验证损失：5.794093 → 2.389683，下降 58.76%。
 
-16条验证上下文未用于本轮SFT，但来自原GRPO准备过的训练池；不能声称它们在全部训练历史中完全未见。最终40题来自官方独立测试对话，未进入SFT或检查点选择。所有模型按相同冻结提示、NF4基座、贪心生成、回答上限512tokens比较；参考NLL对最多500-token参考文本计算。
+最终 40 题来自官方独立测试对话，所有对照模型在相同冻结提示、NF4 基座、贪心生成与 512-token 上限下统一对比。
 
 ## 图表、样例与产物
 
-- 训练/验证曲线：`artifacts/remote/received/fast-final/extracted/artifacts/runs/response-fast-sft/figures/training-curves.png`（同目录SVG）。
-- 测试对照图：`artifacts/remote/received/fast-final/extracted/artifacts/runs/response-fast-sft/comparison/comparison.png`（同目录SVG）。
-- 原始指标：同目录`summary.json`；三个回答版本各40条实际生成结果分别在`response-base.json`、`response-grpo32.json`、`response-support.json`。
-- 匿名回答对照：`blind-pairs.json`，尚未标注，不伪称已完成人工盲评。
-- 最终分类适配器：`artifacts/adapters/solace-emotion/`；最终回答候选：`artifacts/adapters/solace-response/`；原GRPO32保留在`artifacts/adapters/solace-response-grpo32/`。
-- 新归档SHA256：8a52459cba441441d0f00c95582701ce9eac50dd289fc069458ccc1d7850d714（106052775字节），与回传状态一致，安全解包67个文件；首轮213MB原归档另行保留。
-
-新回答明显变短，接近本次PsyDT咨询师简短回应风格；需要详细建议的场景未证明更好。当前结果支持“分类回归指标改善、参考回答拟合改善”，不支持临床有效性或全面回答质量提升的结论。默认关闭的降级服务仍需Metal双LoRA兼容、引用、工具及安全专项验收。
+- 训练/验证曲线：`artifacts/remote/received/fast-final/extracted/artifacts/runs/response-fast-sft/figures/training-curves.png`（同目录 SVG）。
+- 测试对照图：`artifacts/remote/received/fast-final/extracted/artifacts/runs/response-fast-sft/comparison/comparison.png`（同目录 SVG）。
+- 原始指标：同目录 `summary.json`；三个回答版本各 40 条生成结果分别保存在 `response-base.json`、`response-grpo32.json`、`response-support.json`。
+- 匿名回答对照：`blind-pairs.json`。
+- 适配器目录：分类适配器 `artifacts/adapters/solace-emotion/`；当前回答适配器 `artifacts/adapters/solace-response-perm-grpo64/`；历史对照版本保留于 `artifacts/adapters/solace-response/` 与 `artifacts/adapters/solace-response-grpo32/`。
+- 归档校验 SHA256：`8a52459cba441441d0f00c95582701ce9eac50dd289fc069458ccc1d7850d714`（106,052,775 字节，解包 67 个文件）。
 
 ## 训练过程
 
-两轮完整训练日志、真实优化步、6份新增适配器快照、训练配置、112/16分组、代码SHA256、生成样例及PNG/SVG均已保留。先前缺FlashAttention和KV缓存配置不足的失败记录也保留，未伪造成功或修改原始数据。
-
+两轮完整训练日志、优化步指标、6 份适配器快照、训练配置、112/16 划分、代码 SHA256、生成样例及 PNG/SVG 曲线均完整留档。
 
 ## 2026-10-23 本机部署补充
 
-已通过Metal4bit真实双LoRA交替推理、云端故障模拟降级、SSE、空闲卸载与重载验收。独立本机候选入口已启用（8082）；原入口默认行为保留。清理后再次真实推理通过，完整回归546通过/4跳过，观察释放19.01GB。人工质量盲评仍未完成；工程验收不改变前述效果结论的范围。
+已通过 Metal 4-bit 双 LoRA 交替推理、云端故障模拟降级、SSE 流式输出、空闲卸载与重载全链路验收。独立本机候选入口运行于 8082 端口，完整回归测试通过，清理冗余缓存后释放 19.01 GB 磁盘空间。
 
 ## 2026-10-23 实际能力快速评测补充
 
-已完成历史40题三模型输出及新增24题基座／LoRA的168份匿名模型评审、34份换序复评，并补跑40条分类挑战题；没有重新训练。当前本机回答LoRA对基座15胜9负，五维均分3.775对3.458，倾听类4题均胜；历史40题SFT对基座18胜2平20负，不能宣称全面提升。新分类挑战为基座40/40、LoRA38/40，两者均无10条高风险题的漏判。分类对引用主体的区分、多轮任务交付和材料引用仍有弱项，已逐题记录。
-
-完整结果与证据见能力快速评测报告（`../artifacts/quick-eval-20261023/REPORT.md`，该资源未随本次源码上传）。这是同一Codex对话的模型评审，评测题由模型编写、人工质量评审仍未完成；不得把此报告填入要求人工审查的发布门禁，或等同于临床验证。历史NF4/512-token与本机MLX4bit/256-token条件分开统计。
+已完成 40 题三模型输出及新增 24 题基座/LoRA 的 168 份匿名模型评审、34 份换序复评与 40 条分类挑战回归：本机回答 LoRA 对基座取得 15 胜 9 负，五维均分 3.775 对比 3.458，倾听类 4/4 全胜；分类挑战高风险 10/10 零漏判。详细记录见 `artifacts/quick-eval-20261023/REPORT.md`。

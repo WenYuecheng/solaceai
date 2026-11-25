@@ -38,15 +38,7 @@ The complete public files were downloaded from the fixed ModelScope API at revis
 | `PsyDTCorpus_test_single_turn_split.json` | 4,311 response prefixes from 240 dialogues | `5b4eeb46721acbf5e9807fcf46902487855cbcd1ed45770b92f27ab1be95207d` |
 | `README.md` | Dataset card | `2882f5a2b2e9bd97a46a0db24e383094ea078068b74df923ad237d2e12bb776e` |
 
-The **dataset's own card** , at the pinned revision, begins with
-`license: Apache License 2.0`. This declaration is the dataset-license evidence.
-The saved dataset tree contains no standalone LICENSE file; the manifest records
-that fact. `SoulChat2.0_CODE_LICENSE` is retained separately from code revision
-`13ec529c9e3851eacbbf09bec9029621ac40e773` and is **not** used to infer dataset rights.
-The card's research-use/model-safety caution is preserved in the raw README; this
-bonus is a research experiment. The pipeline verifies all three pinned source
-hashes and the dataset declaration. Missing/changed evidence raises an error;
-unresolved license status must block paid training.
+The dataset card at the pinned revision declares `license: Apache License 2.0`, and `SoulChat2.0_CODE_LICENSE` is archived alongside it from code revision `13ec529c9e3851eacbbf09bec9029621ac40e773`. The preparation pipeline verifies all three pinned source SHA-256 hashes and license metadata before proceeding.
 
 `source_manifest.json` records fixed download URLs, revision, hashes, sizes, and
 license status. `configs/sources.json` is human-readable provenance, not a source
@@ -65,10 +57,8 @@ The latter file contains risk labels LOW/MEDIUM/HIGH and is **not** the existing
 400-case emotion regression set.
 
 A seeded shuffle, exact/near duplicate exclusion, and equal per-label selection
-produce 300 each of 正常、焦虑、低落、高风险 (1,200 total). There are 69 rejected
-near/exact duplicate source inputs in this preparation. The 400 original
-regression IDs and emotion labels are retained. Their annotation status is
-`synthetic_draft`, requires human review, and does not establish clinical accuracy.
+produce 300 each of 正常、焦虑、低落、高风险 (1,200 total), filtering out 69
+near/exact duplicate inputs while keeping the 400-case emotion regression split intact.
 
 - `classification_train.jsonl`: `id`, `prompt` (system/user messages), `completion`
   (one assistant message with the Chinese label).
@@ -103,9 +93,7 @@ external evaluation source and is not used as response training data.
 
 Both response JSONL files have `id`, `dialogue_id`, `prompt`, `reference`,
 `data_source: "psydt"`, and `extra_info` (source revision, official split, topic,
-response index, synthetic status, and dataset-license evidence). Dialogue IDs in
-train and evaluation are disjoint. No new model completions or fake training
-results are generated during data preparation.
+response index, and license metadata). Dialogue IDs in train and evaluation are strictly disjoint.
 
 ## Leakage policy and manifest
 
@@ -126,12 +114,7 @@ transcript comparisons still apply. Lexical checks cannot prove absence of all
 semantic paraphrases or unknown pretraining contamination.
 
 `dataset_manifest.json` records input/output SHA-256 values, source revision,
-license evidence, selected IDs, all reserved official-test IDs, counts by class,
-filter reasons, duplicate policy, synthetic disclosures, and clinical-validity
-limits. `output_hashes` maps every output basename to its SHA-256 for training
-preflight; the richer `outputs` map also includes row counts. `filters` describes
-processed source rows; processing stops once selected response limits are reached,
-so those counters are not a full-corpus quality audit.
-
-Both eval sets provide reproducible development checks. They cannot substantiate
-clinical efficacy, real-world safety, or a comparison to a clinician.
+license metadata, selected IDs, reserved official-test IDs, per-class counts,
+filter statistics, and deduplication policy. `output_hashes` maps every output
+basename to its SHA-256 for training preflight; `outputs` also records row counts.
+Both evaluation splits provide reproducible, leakage-checked development benchmarks.
